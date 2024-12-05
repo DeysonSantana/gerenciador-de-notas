@@ -1,0 +1,15 @@
+{
+  "name": "gerenciador-de-notas",
+  "version": "1.0.0",
+  "description": "Este projeto é uma API simples criada em Node.js para gerenciar notas de estudantes. Ele implementa um servidor HTTP que oferece funcionalidades básicas de CRUD (Criar, Ler, Atualizar e Deletar) para manipulação de notas de alunos. A aplicação usa o módulo `http` do Node.js para criar o servidor e o pacote `uuid` para gerar identificadores únicos para cada nota.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "uuid": "^11.0.3"
+  }
+}
