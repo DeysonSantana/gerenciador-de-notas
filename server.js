@@ -1,33 +1,30 @@
-// importação de dependências
 import http from 'http'
 import {v4} from 'uuid'
 
-// setup do servidor
+// setup do server
 const porta = 3000
 
-// criando array
 const grades = [ ]
 
-// criando servidor
-const servidor = http.createServer((req, res) =>{
+const servidor = http.createServer((req, res) => {
 
-    // funções do back-end
-    const {method, url} = req
-    let body = ' '
+    //funçoes do backend
 
-    req.on('data', chunk => {
+    const {method, url } = req
+    let body = ''
+
+    req.on('data', chunk =>{
         body += chunk.toString()
     })
 
-    req.on('end', ( )=>{
-        
-        const id = url.split(' / ') [2]
+    req.on('end', () =>{
+        const id = url.split('/') [2]
 
-         // get
-        if (method === 'GET' && url === '/grades'){
+        //get
+        if(url === '/grades' && method === 'GET'){
             res.writeHead(200, {'Content-Type': 'application/json'})
             res.end(JSON.stringify(grades))
-        }
+        } 
 
         //post
         else if(url === '/grades' && method === 'POST'){
@@ -38,40 +35,47 @@ const servidor = http.createServer((req, res) =>{
             res.end(JSON.stringify(newGrade))
         }
 
-        //put
-        else if(url.startsWith ('/grades/') && method === 'PUT') {
+        // put
+        else if(url.startsWith ('/grades/') && method === 'PUT'){
+                const {studantName, subject, grade} = JSON.parse(body)
+                const gradesToUpdate = grades.find((g) => g.id === id)
 
-        }
+                if(gradesToUpdate) {
 
+                    gradesToUpdate.studantName = studantName
+                    gradesToUpdate.subject = subject
+                    gradesToUpdate.grade = grade
+                    res.writeHead(200, {'Content-Type': 'application/json'})
+                    res.end(JSON.stringify(gradesToUpdate))
+                } else{
+                    res.writeHead(404, {'Content-Type': 'application/json'})
+                    res.end(JSON.stringify({message: 'grade not found'}))
+                }
+        } 
+        
         // delete
-        else if(url.startsWith ('/grades/') && method === 'DELETE') {
-
+        else if(url.startsWith ('/grades/') && method === 'DELETE'){
+            const index = grades.findIndex((g) => g.id === id)
+            if(index !== -1) {
+                grades.splice(index, 1)
+                res.writeHead(204)
+                res.end()
+            }  else {
+                res.writeHead(404, {'Content-Type': 'application/json'})
+                res.end(JSON.stringify({message: 'grade not found'}))
+            }
         }
-
-        //erro
+        
+        // erro
         else {
             res.writeHead(404, {'Content-Type': 'application/json'})
-            res.end(JSON.stringify({error: 'Rota não encontrada'}))
+            res.end(JSON.stringify({message: 'Route not found'}))
         }
-
-
-
-
+    
     })
 
-   
-
-
-
-
 })
 
-// inicia o servidor
-servidor.listen(porta, ( )=>{
+servidor.listen(porta, () =>{
     console.log(`Servidor rodando na porta ${porta}`)
 })
-
-
-
-
-
