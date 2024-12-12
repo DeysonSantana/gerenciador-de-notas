@@ -1,81 +1,71 @@
-import http from 'http'
-import {v4} from 'uuid'
+import express from 'express';
+import { v4 as uuidv4 } from 'uuid';
 
-// setup do server
-const porta = 3000
+const app = express();
+const porta = 3000;
 
-const grades = [ ]
+app.use(express.json()); // Middleware para interpretar JSON no corpo das requisições
 
-const servidor = http.createServer((req, res) => {
+const grades = [];
 
-    //funçoes do backend
+// Rota GET para listar todas as grades
+app.get('/grades', (req, res) => {
+  res.status(200).json(grades);
+});
 
-    const {method, url } = req
-    let body = ''
+// Rota POST para adicionar uma nova grade
+app.post('/grades', (req, res) => {
+  const { studantName, subject, grade } = req.body;
 
-    req.on('data', chunk =>{
-        body += chunk.toString()
-    })
+  if (!studantName || !subject || grade === undefined) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
 
-    req.on('end', () =>{
-        const id = url.split('/') [2]
+  const newGrade = { id: uuidv4(), studantName, subject, grade };
+  grades.push(newGrade);
 
-        //get
-        if(url === '/grades' && method === 'GET'){
-            res.writeHead(200, {'Content-Type': 'application/json'})
-            res.end(JSON.stringify(grades))
-        } 
+  res.status(201).json(newGrade);
+});
 
-        //post
-        else if(url === '/grades' && method === 'POST'){
-            const {studantName, subject, grade} = JSON.parse(body)
-            const newGrade = {id: v4(), studantName, subject, grade}
-            grades.push(newGrade)
-            res.writeHead(201, {'Content-Type': 'application/json'})
-            res.end(JSON.stringify(newGrade))
-        }
+// Rota PUT para atualizar uma grade existente
+app.put('/grades/:id', (req, res) => {
+  const { id } = req.params;
+  const { studantName, subject, grade } = req.body;
 
-        // put
-        else if(url.startsWith ('/grades/') && method === 'PUT'){
-                const {studantName, subject, grade} = JSON.parse(body)
-                const gradesToUpdate = grades.find((g) => g.id === id)
+  const gradeToUpdate = grades.find((g) => g.id === id);
 
-                if(gradesToUpdate) {
+  if (!gradeToUpdate) {
+    return res.status(404).json({ message: 'Grade not found' });
+  }
 
-                    gradesToUpdate.studantName = studantName
-                    gradesToUpdate.subject = subject
-                    gradesToUpdate.grade = grade
-                    res.writeHead(200, {'Content-Type': 'application/json'})
-                    res.end(JSON.stringify(gradesToUpdate))
-                } else{
-                    res.writeHead(404, {'Content-Type': 'application/json'})
-                    res.end(JSON.stringify({message: 'grade not found'}))
-                }
-        } 
-        
-        // delete
-        else if(url.startsWith ('/grades/') && method === 'DELETE'){
-            const index = grades.findIndex((g) => g.id === id)
-            if(index !== -1) {
-                grades.splice(index, 1)
-                res.writeHead(204)
-                res.end()
-            }  else {
-                res.writeHead(404, {'Content-Type': 'application/json'})
-                res.end(JSON.stringify({message: 'grade not found'}))
-            }
-        }
-        
-        // erro
-        else {
-            res.writeHead(404, {'Content-Type': 'application/json'})
-            res.end(JSON.stringify({message: 'Route not found'}))
-        }
-    
-    })
+  gradeToUpdate.studantName = studantName || gradeToUpdate.studantName;
+  gradeToUpdate.subject = subject || gradeToUpdate.subject;
+  gradeToUpdate.grade = grade !== undefined ? grade : gradeToUpdate.grade;
 
-})
+  res.status(200).json(gradeToUpdate);
+});
 
-servidor.listen(porta, () =>{
-    console.log(`Servidor rodando na porta ${porta}`)
-})
+// Rota DELETE para remover uma grade
+app.delete('/grades/:id', (req, res) => {
+  const { id } = req.params;
+
+  const index = grades.findIndex((g) => g.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ message: 'Grade not found' });
+  }
+
+  grades.splice(index, 1);
+
+  res.status(204).send();
+});
+
+// Middleware para rotas não encontradas
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+// Iniciando o servidor
+app.listen(porta, () => {
+  console.log(`Servidor rodando na porta ${porta}`);
+});
