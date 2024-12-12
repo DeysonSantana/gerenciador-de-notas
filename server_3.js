@@ -8,6 +8,63 @@ app.use(express.json()); // Middleware para interpretar JSON no corpo das requis
 
 const grades = [];
 
+// GET - buscar as informações
+app.get('/grades', (req, res) => {
+  res.status(200).json(grades)
+})
+
+// POST - inserir as informações
+
+app.post('/grades', (req, res) => {
+  const { studantName, subject, grade } = req.body;
+
+  if (!studantName || !subject || grade === undefined) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  const newGrade = { id: uuidv4(), studantName, subject, grade };
+  grades.push(newGrade);
+
+  res.status(201).json(newGrade);
+});
+
+// PUT - atualizar informações
+
+app.put('/grades/:id', (req, res ) =>{
+
+  const id = req.params.id
+  const {studanteName, subject, grade} = req.body
+
+  const gradeToUpdate = grades.find((g) => g.id === id)
+
+  if(!gradeToUpdate){
+    return res.status(404).json({message: 'Grade not found'})
+  }
+
+  gradeToUpdate.studanteName = studanteName || gradeToUpdate.studanteName
+  gradeToUpdate.subject = subject || gradeToUpdate.subject
+  gradeToUpdate.grade = grade !== undefined ? grade : gradeToUpdate
+
+  res.status(200).json(gradeToUpdate)
+
+})
+
+// DELETE - exlcuir informações
+app.delete('/grades/:id', (req, res) => {
+
+  const {id} = req.params
+
+  const index = grades.findIndex((g) => g.id === id)
+
+  if(index === -1) {
+    return res.status(404).json({message: 'Grade not found'})
+  }
+   
+ grades.splice(index, 1)
+
+ res.status(204).send()
+
+})
 
 // Middleware para rotas não encontradas
 app.use((req, res) => {

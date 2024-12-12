@@ -8,10 +8,35 @@ app.use(express.json()); // Middleware para interpretar JSON no corpo das requis
 
 const grades = [];
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Rota GET para listar todas as grades
 app.get('/grades', (req, res) => {
   res.status(200).json(grades);
 });
+
+
+
+
+
+
+
+
+
+
 
 // Rota POST para adicionar uma nova grade
 app.post('/grades', (req, res) => {
